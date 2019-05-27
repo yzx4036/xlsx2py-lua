@@ -8,6 +8,6 @@ for /R %BATDIR% %%i in (*.bat) do (
 call %%i
 )
 
-python ./xlsx2py/translate_copy.py %ROOT%\output %ROOT%\outputTest
+python ./xlsx2py/translate_copy.py %ROOT%\output %ROOT%\..\..\LuaScripts\Config\Data
 pause
 echo on

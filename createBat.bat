@@ -3,7 +3,7 @@ set DIR=%ROOT%\bat
 
 set xlsx=%1
 set file=%DIR%\%xlsx%.bat
-set name=Cfg_%xlsx:~0,-5%
+set name=Cfg%xlsx:~0,-5%
 echo %name%
 set py=%name%.py
 
