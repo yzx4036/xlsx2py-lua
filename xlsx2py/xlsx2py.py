@@ -46,6 +46,7 @@ class xlsx2py(object):
 		sys.excepthook = xlsxError.except_hook						#traceback处理,希望输出中文
 		self.infile = os.path.abspath(infile)						#暂存excel文件名
 		self.outfile = os.path.abspath(outfile)						#data文件名
+		self.propertiesList = dict()
 		return
 
 	def __initXlsx(self):
@@ -500,6 +501,8 @@ class xlsx2py(object):
 						lua_str += '["' + k + '"]'
 					else:		
 						lua_str += k
+						if k not in self.propertiesList:
+							self.propertiesList[k] = k
 				lua_str += ' = '
 				try:
 					lua_str += self.dic_to_lua_str(v,layer +1)
@@ -539,7 +542,8 @@ class xlsx2py(object):
 			
 			#输出lua
 			fileName = os.path.basename(self.fileHandler.stream.name)[0:-3]
-			fileName = fileName+"_"+dataName
+			luaClassName = fileName+"_"+dataName
+			fileName = luaClassName+"Table"
 			dirName = os.path.dirname(self.fileHandler.stream.name)
 			luaPath = dirName + "/" + fileName
 			patt = "----not overwrite----.*?--not overwrite"
@@ -555,10 +559,11 @@ class xlsx2py(object):
 			jsonhandle = codecs.open(luaPath + ".lua", "w+",'utf-8')
 			s = json.dumps(datas)
 			
-			b = self.dic_to_lua_str(json.loads(s), 0)
-			jsonhandle.write("local {0} =".format(fileName))
-			jsonhandle.write("{0}".format(b))
-			self.writeInitLuaFunction(jsonhandle, fileName)
+			luaContent = self.dic_to_lua_str(json.loads(s), 0) #json转为lua
+			jsonhandle.write("---@class {0}\nlocal {1} =".format(fileName, fileName))
+			jsonhandle.write("{0}".format(luaContent))
+			self.writeInitLuaClass(jsonhandle, luaClassName)
+			self.writeInitLuaFunction(jsonhandle, fileName, luaClassName)
 			if len(srcReadStr) > 0:
 				#表示找到not overwrite 部分
 				jsonhandle.write("\n")
@@ -571,14 +576,34 @@ class xlsx2py(object):
 			jsonhandle.write("return {0}".format(fileName))
 			jsonhandle.close()
 
-			
-	def writeInitLuaFunction(self, fileOpenHandler, tableName):
-		fileOpenHandler.write("\n\n")
+
+	#写入对应的lua 类
+	def writeInitLuaClass(self, fileOpenHandler, className):
+		fileOpenHandler.write("\n\n---@class {0}\n".format(className))
+		fileOpenHandler.write("local {0} = BassClass('{1}')\n".format(className, className))
+		fileOpenHandler.write("function {0}:__init(data)\n".format(className))
+		i = 1
+		for key, name in self.propertiesList.items():
+			fileOpenHandler.write("\t{0} = data[{1}] \n".format(key, i))
+			i +=1;
+		fileOpenHandler.write("\tdata = nil\nend\n".format(className))
+
+
+	def writeInitLuaFunction(self, fileOpenHandler, tableName, className):
+		fileOpenHandler.write("\n\n---@type table<number, {0}>\n".format(className))
+		fileOpenHandler.write("local _instList={}\n")
+		fileOpenHandler.write("---@return table<number, {0}>\n".format(className))
 		fileOpenHandler.write("function {0}.GetByKey(key)\n".format(tableName))
-		fileOpenHandler.write("\tif {0}[key] == nil then\n".format(tableName))
-		fileOpenHandler.write("\t\tLogError('{0} 配置没有key对应:',key)\n".format(tableName))
+		fileOpenHandler.write("\tif {0}[key] == nil  and _instList[key] == nil  then\n".format(tableName))
+		fileOpenHandler.write("\t\tLogger.LogError('{0} 配置没有key=%s对应的行!',key) return\n".format(tableName))
 		fileOpenHandler.write("\tend\n".format(tableName))
-		fileOpenHandler.write("\treturn {0}[key]\n".format(tableName))		
+
+		fileOpenHandler.write("\tif _instList[key] == nil  then\n")
+		fileOpenHandler.write("\t\t_insList[key] = {0}.New({1}[key])\n".format(className, tableName))
+		fileOpenHandler.write("\t\t{0}[key] = nil\n".format(tableName))
+		fileOpenHandler.write("\tend\n".format(tableName))
+
+		fileOpenHandler.write("\treturn {0}[key]\n".format(tableName))
 		fileOpenHandler.write("end\n".format(tableName))
 	
 	def writeFoot(self):
