@@ -539,7 +539,7 @@ class xlsx2py(object):
 			
 			#输出lua
 			fileName = os.path.basename(self.fileHandler.stream.name)[0:-3]
-			fileName = fileName+"_"+dataName
+			fileName = fileName+""+dataName
 			dirName = os.path.dirname(self.fileHandler.stream.name)
 			luaPath = dirName + "/" + fileName
 			patt = "----not overwrite----.*?--not overwrite"
