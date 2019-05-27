@@ -4,6 +4,8 @@ set ROOT="%cd%"
 set DIR="%ROOT%\xlsxs"
 set BATDIR="%ROOT%\bat"
 
+python ./xlsx2py/translate_copy.py %ROOT%\..\..\LuaScripts\Config\Data %ROOT%\output
+
 for /R %BATDIR% %%i in (*.bat) do (
 call %%i
 )
