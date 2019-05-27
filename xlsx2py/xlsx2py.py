@@ -599,11 +599,11 @@ class xlsx2py(object):
 		fileOpenHandler.write("\tend\n".format(tableName))
 
 		fileOpenHandler.write("\tif _instList[key] == nil  then\n")
-		fileOpenHandler.write("\t\t_insList[key] = {0}.New({1}[key])\n".format(className, tableName))
+		fileOpenHandler.write("\t\t_instList[key] = {0}.New({1}[key])\n".format(className, tableName))
 		fileOpenHandler.write("\t\t{0}[key] = nil\n".format(tableName))
 		fileOpenHandler.write("\tend\n".format(tableName))
 
-		fileOpenHandler.write("\treturn {0}[key]\n".format(tableName))
+		fileOpenHandler.write("\treturn _instList[key]\n")
 		fileOpenHandler.write("end\n".format(tableName))
 	
 	def writeFoot(self):
