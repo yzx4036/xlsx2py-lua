@@ -592,9 +592,7 @@ class xlsx2py(object):
 
 
 	def writeGetLuaFunction(self, fileOpenHandler, tableName, className):
-		fileOpenHandler.write("\n\n---@type table<number, {0}>\n".format(className))
-		fileOpenHandler.write("local _instList={}\n")
-		fileOpenHandler.write("---@return table<number, {0}>\n".format(className))
+		fileOpenHandler.write("\n---@return table<number, {0}>\n".format(className))
 		fileOpenHandler.write("function {0}.GetByKey(key)\n".format(tableName))
 		fileOpenHandler.write("\tif {0}[key] == nil  and _instList[key] == nil  then\n".format(tableName))
 		fileOpenHandler.write("\t\tLogger.LogError('{0} 配置没有key=%s对应的行!',key) return\n".format(tableName))
@@ -610,6 +608,8 @@ class xlsx2py(object):
 
 
 	def writeInitTableLuaFunction(self, fileOpenHandler, tableName, className):
+		fileOpenHandler.write("\n\n---@type table<number, {0}>\n".format(className))
+		fileOpenHandler.write("local _instList={}\n")
 		fileOpenHandler.write("\nfunction {0}.InitAll()\n".format(tableName))
 		fileOpenHandler.write("\tif table.length({0}) > 0 then\n".format(tableName))
 		fileOpenHandler.write("\t\tfor k, v in pairs({0}) do\n".format(tableName))
@@ -621,7 +621,7 @@ class xlsx2py(object):
 
 
 	def writeGetTableLuaFunction(self, fileOpenHandler, tableName, className):
-		fileOpenHandler.write("\nfunction {0}.InitAll()\n".format(tableName))
+		fileOpenHandler.write("\nfunction {0}.GetTable()\n".format(tableName))
 		fileOpenHandler.write("\t{0}.InitAll()\n".format(tableName))
 		fileOpenHandler.write("\treturn _instList;\n")
 		fileOpenHandler.write("end\n")
