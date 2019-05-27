@@ -584,7 +584,7 @@ class xlsx2py(object):
 		fileOpenHandler.write("function {0}:__init(data)\n".format(className))
 		i = 1
 		for key, name in self.propertiesList.items():
-			fileOpenHandler.write("\t{0} = data[{1}] \n".format(key, i))
+			fileOpenHandler.write("\tself.{0} = data[{1}] \n".format(key, i))
 			i +=1;
 		fileOpenHandler.write("\tdata = nil\nend\n".format(className))
 
