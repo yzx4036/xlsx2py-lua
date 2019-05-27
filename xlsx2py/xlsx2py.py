@@ -592,7 +592,7 @@ class xlsx2py(object):
 
 
 	def writeGetLuaFunction(self, fileOpenHandler, tableName, className):
-		fileOpenHandler.write("\n---@return table<number, {0}>\n".format(className))
+		fileOpenHandler.write("\n---@return {0}\n".format(className))
 		fileOpenHandler.write("function {0}.GetByKey(key)\n".format(tableName))
 		fileOpenHandler.write("\tif {0}[key] == nil  and _instList[key] == nil  then\n".format(tableName))
 		fileOpenHandler.write("\t\tLogger.LogError('{0} 配置没有key=%s对应的行!',key) return\n".format(tableName))
@@ -621,6 +621,7 @@ class xlsx2py(object):
 
 
 	def writeGetTableLuaFunction(self, fileOpenHandler, tableName, className):
+		fileOpenHandler.write("\n---@type table<number, {0}>".format(className))
 		fileOpenHandler.write("\nfunction {0}.GetTable()\n".format(tableName))
 		fileOpenHandler.write("\t{0}.InitAll()\n".format(tableName))
 		fileOpenHandler.write("\treturn _instList;\n")
