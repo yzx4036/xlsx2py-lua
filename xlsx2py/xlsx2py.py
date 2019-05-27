@@ -563,7 +563,9 @@ class xlsx2py(object):
 			jsonhandle.write("---@class {0}\nlocal {1} =".format(fileName, fileName))
 			jsonhandle.write("{0}".format(luaContent))
 			self.writeInitLuaClass(jsonhandle, luaClassName)
-			self.writeInitLuaFunction(jsonhandle, fileName, luaClassName)
+			self.writeInitTableLuaFunction(jsonhandle, fileName, luaClassName)
+			self.writeGetTableLuaFunction(jsonhandle, fileName, luaClassName)
+			self.writeGetLuaFunction(jsonhandle, fileName, luaClassName)
 			if len(srcReadStr) > 0:
 				#表示找到not overwrite 部分
 				jsonhandle.write("\n")
@@ -589,7 +591,7 @@ class xlsx2py(object):
 		fileOpenHandler.write("\tdata = nil\nend\n".format(className))
 
 
-	def writeInitLuaFunction(self, fileOpenHandler, tableName, className):
+	def writeGetLuaFunction(self, fileOpenHandler, tableName, className):
 		fileOpenHandler.write("\n\n---@type table<number, {0}>\n".format(className))
 		fileOpenHandler.write("local _instList={}\n")
 		fileOpenHandler.write("---@return table<number, {0}>\n".format(className))
@@ -605,7 +607,26 @@ class xlsx2py(object):
 
 		fileOpenHandler.write("\treturn _instList[key]\n")
 		fileOpenHandler.write("end\n".format(tableName))
-	
+
+
+	def writeInitTableLuaFunction(self, fileOpenHandler, tableName, className):
+		fileOpenHandler.write("\nfunction {0}.InitAll()\n".format(tableName))
+		fileOpenHandler.write("\tif table.length({0}) > 0 then\n".format(tableName))
+		fileOpenHandler.write("\t\tfor k, v in pairs({0}) do\n".format(tableName))
+		fileOpenHandler.write("\t\t\t_instList[k] = {0}.New(v)\n".format(className))
+		fileOpenHandler.write("\t\t\t{0}[key] = nil\n".format(tableName))
+		fileOpenHandler.write("\t\tend\n")
+		fileOpenHandler.write("\tend\n")
+		fileOpenHandler.write("end\n")
+
+
+	def writeGetTableLuaFunction(self, fileOpenHandler, tableName, className):
+		fileOpenHandler.write("\nfunction {0}.InitAll()\n".format(tableName))
+		fileOpenHandler.write("\t{0}.InitAll()\n".format(tableName))
+		fileOpenHandler.write("\treturn _instList;\n")
+		fileOpenHandler.write("end\n")
+
+
 	def writeFoot(self):
 		"""
 		文件尾
