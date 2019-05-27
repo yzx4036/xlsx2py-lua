@@ -582,7 +582,7 @@ class xlsx2py(object):
 	#写入对应的lua 类
 	def writeInitLuaClass(self, fileOpenHandler, className):
 		fileOpenHandler.write("\n\n---@class {0}\n".format(className))
-		fileOpenHandler.write("local {0} = BassClass('{1}')\n".format(className, className))
+		fileOpenHandler.write("local {0} = BaseClass('{1}')\n".format(className, className))
 		fileOpenHandler.write("function {0}:__init(data)\n".format(className))
 		i = 1
 		for key, name in self.propertiesList.items():
