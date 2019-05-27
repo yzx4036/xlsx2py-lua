@@ -621,7 +621,7 @@ class xlsx2py(object):
 
 
 	def writeGetTableLuaFunction(self, fileOpenHandler, tableName, className):
-		fileOpenHandler.write("\n---@type table<number, {0}>".format(className))
+		fileOpenHandler.write("\n---@return table<number, {0}>".format(className))
 		fileOpenHandler.write("\nfunction {0}.GetTable()\n".format(tableName))
 		fileOpenHandler.write("\t{0}.InitAll()\n".format(tableName))
 		fileOpenHandler.write("\treturn _instList;\n")
