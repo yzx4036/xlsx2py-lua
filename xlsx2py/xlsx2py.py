@@ -614,7 +614,7 @@ class xlsx2py(object):
 		fileOpenHandler.write("\tif table.length({0}) > 0 then\n".format(tableName))
 		fileOpenHandler.write("\t\tfor k, v in pairs({0}) do\n".format(tableName))
 		fileOpenHandler.write("\t\t\t_instList[k] = {0}.New(v)\n".format(className))
-		fileOpenHandler.write("\t\t\t{0}[key] = nil\n".format(tableName))
+		fileOpenHandler.write("\t\t\t{0}[k] = nil\n".format(tableName))
 		fileOpenHandler.write("\t\tend\n")
 		fileOpenHandler.write("\tend\n")
 		fileOpenHandler.write("end\n")
