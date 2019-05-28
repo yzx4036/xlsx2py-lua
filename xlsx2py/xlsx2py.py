@@ -542,7 +542,7 @@ class xlsx2py(object):
 			
 			#输出lua
 			fileName = os.path.basename(self.fileHandler.stream.name)[0:-3]
-			luaClassName = fileName+"_"+dataName
+			luaClassName = fileName+""+dataName
 			fileName = luaClassName+"Table"
 			dirName = os.path.dirname(self.fileHandler.stream.name)
 			luaPath = dirName + "/" + fileName
