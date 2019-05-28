@@ -596,7 +596,7 @@ class xlsx2py(object):
 				jsonhandle.write("\n----not overwrite>> the hepler custom ----\n\n--可在这里写一些自定义函数\n\n----<<not overwrite----\n\n")
 				
 				
-			jsonhandle.write("return {0}".format(fileName))
+			jsonhandle.write("return {0}".format(luaHelperName))
 			jsonhandle.close()
 
 
