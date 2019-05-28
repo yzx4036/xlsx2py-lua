@@ -611,7 +611,7 @@ class xlsx2py(object):
 		fileOpenHandler.write("\n\n---@type table<number, {0}>\n".format(className))
 		fileOpenHandler.write("local _instList={}\n")
 		fileOpenHandler.write("\nfunction {0}.InitAll()\n".format(tableName))
-		fileOpenHandler.write("\tif table.length({0}) > 0 then\n".format(tableName))
+		fileOpenHandler.write("\tif table.count({0}) > 0 then\n".format(tableName))
 		fileOpenHandler.write("\t\tfor k, v in pairs({0}) do\n".format(tableName))
 		fileOpenHandler.write("\t\t\t_instList[k] = {0}.New(v)\n".format(className))
 		fileOpenHandler.write("\t\t\t{0}[k] = nil\n".format(tableName))
