@@ -547,7 +547,7 @@ class xlsx2py(object):
 			dirName = os.path.dirname(self.fileHandler.stream.name)
 			luaPath = dirName + "/" + fileName
 			classPatt = "----not overwrite>> the class custom ----.*?----<<not overwrite----"
-			helperPatt = "----not overwrite>> the hepler custom ----.*?----<<not overwrite----"
+			helperPatt = "----not overwrite>> the helper custom ----.*?----<<not overwrite----"
 
 			srcReadHelperStr = {}
 			srcReadClassStr = {}
@@ -593,7 +593,7 @@ class xlsx2py(object):
 				jsonhandle.write(srcReadHelperStr[0])
 				jsonhandle.write("\n")
 			else:
-				jsonhandle.write("\n----not overwrite>> the hepler custom ----\n\n--可在这里写一些自定义函数\n\n----<<not overwrite----\n\n")
+				jsonhandle.write("\n----not overwrite>> the helper custom ----\n\n--可在这里写一些自定义函数\n\n----<<not overwrite----\n\n")
 				
 				
 			jsonhandle.write("return {0}".format(luaHelperName))
@@ -612,7 +612,7 @@ class xlsx2py(object):
 
 	def writeHelperGetLuaFunction(self, fileOpenHandler, tableName, className, helperName):
 		fileOpenHandler.write("\n---@return {0}\n".format(className))
-		fileOpenHandler.write("function {0}:GetByKey(key)\n".format(tableName))
+		fileOpenHandler.write("function {0}:GetByKey(key)\n".format(helperName))
 		fileOpenHandler.write("\tif {0}[key] == nil  and _cfgInstDict[key] == nil  then\n".format(tableName))
 		fileOpenHandler.write("\t\tLogger.LogError('{0} 配置没有key=%s对应的行!',key) return\n".format(tableName))
 		fileOpenHandler.write("\tend\n")
