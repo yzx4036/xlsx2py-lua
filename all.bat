@@ -15,5 +15,5 @@ call %%i
 )
 
 python ./xlsx2py/translate_copy.py %ROOT%\output %LuaOutPutPath%
+@echo SUCCEEDED
 pause
-echo on
