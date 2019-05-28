@@ -532,7 +532,6 @@ class xlsx2py(object):
 
 		for dataName, datas in g_dctDatas.items():
 			stream = dataName + "="
-			print(dataName)
 			#stream += xlsxtool.dict_to_text(datas) + "\n"
 			stream += "%s\n" % (datas)
 			self.xlsxWrite(stream)
@@ -544,14 +543,22 @@ class xlsx2py(object):
 			fileName = os.path.basename(self.fileHandler.stream.name)[0:-3]
 			luaClassName = fileName+""+dataName
 			fileName = luaClassName+"Table"
+			luaHelperName = luaClassName+"Helper"
 			dirName = os.path.dirname(self.fileHandler.stream.name)
 			luaPath = dirName + "/" + fileName
-			patt = "----not overwrite----.*?--not overwrite"
-			srcReadStr = {}
+			classPatt = "----not overwrite>> the class custom ----.*?----<<not overwrite----"
+			helperPatt = "----not overwrite>> the hepler custom ----.*?----<<not overwrite----"
+
+			srcReadHelperStr = {}
+			srcReadClassStr = {}
+
+			tempReadStr = {}
 			try:
 				jsonhandle = codecs.open(luaPath + ".lua", "r+",'utf-8')
-				srcReadStr = jsonhandle.read()
-				srcReadStr = re.findall(patt, srcReadStr, re.S)
+				tempReadStr = jsonhandle.read()
+				srcReadHelperStr = re.findall(helperPatt, tempReadStr, re.S)
+				srcReadClassStr = re.findall(classPatt, tempReadStr, re.S)
+				tempReadStr = None
 				jsonhandle.close()
 			except Exception as identifier:
 				pass
@@ -563,16 +570,30 @@ class xlsx2py(object):
 			jsonhandle.write("---@class {0}\nlocal {1} =".format(fileName, fileName))
 			jsonhandle.write("{0}".format(luaContent))
 			self.writeInitLuaClass(jsonhandle, luaClassName)
-			self.writeInitTableLuaFunction(jsonhandle, fileName, luaClassName)
-			self.writeGetTableLuaFunction(jsonhandle, fileName, luaClassName)
-			self.writeGetLuaFunction(jsonhandle, fileName, luaClassName)
-			if len(srcReadStr) > 0:
-				#表示找到not overwrite 部分
+
+			# 写入class 的自定义块
+			if len(srcReadClassStr) > 0:
+				# 表示找到not overwrite 部分
 				jsonhandle.write("\n")
-				jsonhandle.write(srcReadStr[0])
+				jsonhandle.write(srcReadClassStr[0])
 				jsonhandle.write("\n")
 			else:
-				jsonhandle.write("\n----not overwrite----\n\n--可在这里写一些自定义函数\n\n--not overwrite\n\n")
+				jsonhandle.write(
+					"\n----not overwrite>> the class custom ----\n\n--可在这里写一些自定义函数\n\n----<<not overwrite----\n\n")
+
+			jsonhandle.write("\n\n--->>>>--->>>>--->>>>--------我是分割线--------<<<<---<<<<---<<<<---\n\n")
+			self.writeHelperInitTableLuaFunction(jsonhandle, fileName, luaClassName, luaHelperName)
+			self.writeHelperGetTableLuaFunction(jsonhandle, luaClassName, luaHelperName)
+			self.writeHelperGetLuaFunction(jsonhandle, fileName, luaClassName, luaHelperName)
+
+			#写入helper 的自定义块
+			if len(srcReadHelperStr) > 0:
+				#表示找到not overwrite 部分
+				jsonhandle.write("\n")
+				jsonhandle.write(srcReadHelperStr[0])
+				jsonhandle.write("\n")
+			else:
+				jsonhandle.write("\n----not overwrite>> the hepler custom ----\n\n--可在这里写一些自定义函数\n\n----<<not overwrite----\n\n")
 				
 				
 			jsonhandle.write("return {0}".format(fileName))
@@ -584,47 +605,47 @@ class xlsx2py(object):
 		fileOpenHandler.write("\n\n---@class {0}\n".format(className))
 		fileOpenHandler.write("local {0} = BaseClass('{1}')\n".format(className, className))
 		fileOpenHandler.write("function {0}:__init(data)\n".format(className))
-		i = 1
 		for key, name in self.propertiesList.items():
-			fileOpenHandler.write("\tself.{0} = data[{1}] \n".format(key, i))
-			i +=1;
+			fileOpenHandler.write("\tself.{0} = data.{1} \n".format(key, key))
 		fileOpenHandler.write("\tdata = nil\nend\n".format(className))
 
 
-	def writeGetLuaFunction(self, fileOpenHandler, tableName, className):
+	def writeHelperGetLuaFunction(self, fileOpenHandler, tableName, className, helperName):
 		fileOpenHandler.write("\n---@return {0}\n".format(className))
-		fileOpenHandler.write("function {0}.GetByKey(key)\n".format(tableName))
-		fileOpenHandler.write("\tif {0}[key] == nil  and _instList[key] == nil  then\n".format(tableName))
+		fileOpenHandler.write("function {0}:GetByKey(key)\n".format(tableName))
+		fileOpenHandler.write("\tif {0}[key] == nil  and _cfgInstDict[key] == nil  then\n".format(tableName))
 		fileOpenHandler.write("\t\tLogger.LogError('{0} 配置没有key=%s对应的行!',key) return\n".format(tableName))
-		fileOpenHandler.write("\tend\n".format(tableName))
+		fileOpenHandler.write("\tend\n")
 
-		fileOpenHandler.write("\tif _instList[key] == nil  then\n")
-		fileOpenHandler.write("\t\t_instList[key] = {0}.New({1}[key])\n".format(className, tableName))
+		fileOpenHandler.write("\tif _cfgInstDict[key] == nil  then\n")
+		fileOpenHandler.write("\t\t_cfgInstDict[key] = {0}.New({1}[key])\n".format(className, tableName))
 		fileOpenHandler.write("\t\t{0}[key] = nil\n".format(tableName))
-		fileOpenHandler.write("\tend\n".format(tableName))
+		fileOpenHandler.write("\tend\n")
 
-		fileOpenHandler.write("\treturn _instList[key]\n")
-		fileOpenHandler.write("end\n".format(tableName))
+		fileOpenHandler.write("\treturn _cfgInstDict[key]\n")
+		fileOpenHandler.write("end\n")
 
 
-	def writeInitTableLuaFunction(self, fileOpenHandler, tableName, className):
+	def writeHelperInitTableLuaFunction(self, fileOpenHandler, tableName, className, helperName):
 		fileOpenHandler.write("\n\n---@type table<number, {0}>\n".format(className))
-		fileOpenHandler.write("local _instList={}\n")
-		fileOpenHandler.write("\nfunction {0}.InitAll()\n".format(tableName))
+		fileOpenHandler.write("local _cfgInstDict = {}\n")
+		fileOpenHandler.write("\n\n---@class {0}\n".format(helperName))
+		fileOpenHandler.write("local {0} = BaseClass('{1}')\n".format(helperName, helperName))
+		fileOpenHandler.write("\nfunction {0}:InitAll()\n".format(helperName))
 		fileOpenHandler.write("\tif table.count({0}) > 0 then\n".format(tableName))
 		fileOpenHandler.write("\t\tfor k, v in pairs({0}) do\n".format(tableName))
-		fileOpenHandler.write("\t\t\t_instList[k] = {0}.New(v)\n".format(className))
+		fileOpenHandler.write("\t\t\t_cfgInstDict[k] = {0}.New(v)\n".format(className))
 		fileOpenHandler.write("\t\t\t{0}[k] = nil\n".format(tableName))
 		fileOpenHandler.write("\t\tend\n")
 		fileOpenHandler.write("\tend\n")
 		fileOpenHandler.write("end\n")
 
 
-	def writeGetTableLuaFunction(self, fileOpenHandler, tableName, className):
+	def writeHelperGetTableLuaFunction(self, fileOpenHandler, className, helperName):
 		fileOpenHandler.write("\n---@return table<number, {0}>".format(className))
-		fileOpenHandler.write("\nfunction {0}.GetTable()\n".format(tableName))
-		fileOpenHandler.write("\t{0}.InitAll()\n".format(tableName))
-		fileOpenHandler.write("\treturn _instList;\n")
+		fileOpenHandler.write("\nfunction {0}:GetTable()\n".format(helperName))
+		fileOpenHandler.write("\tself:InitAll()\n")
+		fileOpenHandler.write("\treturn _cfgInstDict\n")
 		fileOpenHandler.write("end\n")
 
 
