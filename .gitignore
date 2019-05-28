@@ -1,4 +1,5 @@
 xlsx2py/.idea/
-output/
 bat/
 xlsxs/
+*.lua
+*.py
