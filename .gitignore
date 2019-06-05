@@ -3,3 +3,4 @@ bat/
 xlsxs/
 *.lua
 *.py
+xlsx2py/__pycache__/
